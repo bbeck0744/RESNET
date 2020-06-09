@@ -1,6 +1,7 @@
 from ftplib import FTP
 from io import StringIO
 from io import BytesIO
+import numpy as np
 import pandas as pd
 
 #open connection to MCWD ftp server
@@ -33,6 +34,7 @@ ftp.quit()
 df = pd.concat(df_list)
 df = df.rename(columns={0: "date", 1: "time", 2: "parameter", 3: "value", 4: "unit", 5: "QC"})
 df['datetime'] = pd.to_datetime(df['date'] + ' ' + df['time'])
+df = df[df.value != 'MISSING']
 
 #seperate df by level, temp, and cond
 level_df=df[df['parameter'] == "Level"]
@@ -51,6 +53,11 @@ CPA01_private = cleaned_combined.rename(columns={"date_x":"date", "datetime": "C
 
 CPA01_private['rounded_time'] = CPA01_private['rounded_time'].astype(str)
 CPA01_public = CPA01_private.groupby("rounded_time").mean()
+
+#Calculate flow for CMH04 using rating curve (CPA01: flow=10.098*(stage-932.94)^2.1891)
+CPA01_public['flow'] = CPA01_public['level_ft']-932.94
+CPA01_public['flow']=np.power(CPA01_public['flow'], 2.1891)
+CPA01_public['flow']= CPA01_public['flow'] * 10.098
 
 ftp = FTP('213.190.6.111')
 ftp.login(user='u948444459', passwd = 'MCWD2020')
