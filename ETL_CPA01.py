@@ -34,7 +34,7 @@ ftp.quit()
 df = pd.concat(df_list)
 df = df.rename(columns={0: "date", 1: "time", 2: "parameter", 3: "value", 4: "unit", 5: "QC"})
 df['datetime'] = pd.to_datetime(df['date'] + ' ' + df['time'])
-df = df[df.value != 'MISSING']
+df.drop(df[df['value'] == 'MISSING'].index, inplace = True) 
 
 #seperate df by level, temp, and cond
 level_df=df[df['parameter'] == "Level"]
@@ -52,6 +52,7 @@ CPA01_private = cleaned_combined.rename(columns={"date_x":"date", "datetime": "C
                                         "level_ft", "QC_x": "QC_level", "value": "cond_uS", "QC": "QC_cond"})
 
 CPA01_private['rounded_time'] = CPA01_private['rounded_time'].astype(str)
+CPA01_private['level_ft'] = CPA01_private['level_ft'].astype(float)
 CPA01_public = CPA01_private.groupby("rounded_time").mean()
 
 #Calculate flow for CMH04 using rating curve (CPA01: flow=10.098*(stage-932.94)^2.1891)
