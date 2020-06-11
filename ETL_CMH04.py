@@ -21,6 +21,7 @@ def handle_binary(more_data):
 
 for filename in ftp.nlst():
     if ".csv" in filename:
+        print('Getting ' + filename)
         sio = BytesIO()
         ftp.retrbinary(f"RETR {filename}", callback=handle_binary)
         sio.seek(0) # Go back to the startdpd.read_csv(sio, header=None, skiprows= 8, nrows = 3)
@@ -36,6 +37,8 @@ data['datetime'] = pd.to_datetime(data['date'] + ' ' + data['time'], dayfirst=Tr
 
 #merge each parameter to create merged dataframe
 CMH04_private = data.loc[:, ["date", "time", "datetime", "level_ft", "temp_C", "pressure"]]
+CMH04_private['level_ft'] = pd.to_numeric(CMH04_private['level_ft'], errors='coerce')
+CMH04_private.dropna(subset = ["level_ft"], inplace=True)
 CMH04_private['rounded_time'] = CMH04_private['datetime'].dt.floor('h')
 CMH04_private['rounded_time'] = CMH04_private['rounded_time'].astype(str)
 CMH04_public = CMH04_private.groupby("rounded_time").mean()
