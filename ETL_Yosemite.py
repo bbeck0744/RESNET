@@ -20,7 +20,7 @@ def handle_binary(more_data):
 
 
 for filename in ftp.nlst():
-    if "CMH04" in filename:
+    if "Yosemite" in filename:
         try:
             sio = BytesIO()
             ftp.retrbinary(f"RETR {filename}", callback=handle_binary)
@@ -39,17 +39,17 @@ data['datetime'] = pd.to_datetime(data['date'] + ' ' + data['time'], dayfirst=Tr
 
 
 #merge each parameter to create merged dataframe
-CMH04_private = data.loc[:, ["date", "time", "datetime", "level_ft", "temp_C", "pressure"]]
-CMH04_private['level_ft'] = pd.to_numeric(CMH04_private['level_ft'], errors='coerce')
-CMH04_private.dropna(subset = ["level_ft"], inplace=True)
-CMH04_private['rounded_time'] = CMH04_private['datetime'].dt.floor('h')
-CMH04_private['rounded_time'] = CMH04_private['rounded_time'].astype(str)
-CMH04_public = CMH04_private.groupby("rounded_time").mean()
+Yosemite_private = data.loc[:, ["date", "time", "datetime", "level_ft", "temp_C", "pressure"]]
+Yosemite_private['level_ft'] = pd.to_numeric(Yosemite_private['level_ft'], errors='coerce')
+Yosemite_private.dropna(subset = ["level_ft"], inplace=True)
+Yosemite_private['rounded_time'] = Yosemite_private['datetime'].dt.floor('h')
+Yosemite_private['rounded_time'] = Yosemite_private['rounded_time'].astype(str)
+Yosemite_public = Yosemite_private.groupby("rounded_time").mean()
 
-#Calculate flow for CMH04 using rating curve (CMH04: flow=37.319*(stage-853.55)^1.7061)
-CMH04_public['flow'] = CMH04_public['level_ft']-853.55
-CMH04_public['flow']=np.power(CMH04_public['flow'], 1.7061)
-CMH04_public['flow']= CMH04_public['flow'] * 37.319
+#Calculate flow for Yosemite using rating curve (Yosemite: flow=37.319*(stage-853.55)^1.7061)
+Yosemite_public['flow'] = Yosemite_public['level_ft']-853.55
+Yosemite_public['flow']=np.power(Yosemite_public['flow'], 1.7061)
+Yosemite_public['flow']= Yosemite_public['flow'] * 37.319
 
 
 ftp = FTP('213.190.6.111')
@@ -61,20 +61,20 @@ ftp.cwd('/public_html/')
 buffer = StringIO()
 
 # saving a data frame to a buffer (same as with a regular file):
-CMH04_private.to_csv(buffer, sep=',', encoding = 'utf-8', mode ='r', index=True)
+Yosemite_private.to_csv(buffer, sep=',', encoding = 'utf-8', mode ='r', index=True)
 text = buffer.getvalue()
 bio = BytesIO(str.encode(text))
 bio.seek(0)
-ftp.storbinary('STOR '+ 'private_CMH04.csv', bio)
+ftp.storbinary('STOR '+ 'private_Yosemite.csv', bio)
 
 # text buffer
 public = StringIO()
 
 # saving a data frame to a buffer (same as with a regular file):
-CMH04_public.to_csv(public, sep=',', encoding = 'utf-8', mode ='r', index=True)
+Yosemite_public.to_csv(public, sep=',', encoding = 'utf-8', mode ='r', index=True)
 public_text = public.getvalue()
 public_bio = BytesIO(str.encode(public_text))
 public_bio.seek(0)
-ftp.storbinary('STOR '+ 'public_CMH04.csv', public_bio)
+ftp.storbinary('STOR '+ 'public_Yosemite.csv', public_bio)
 
 ftp.quit()
