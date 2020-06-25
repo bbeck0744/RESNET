@@ -220,10 +220,10 @@ function setBubblePlot(chosenSite) {
     var data = [trace1];
 
     var layout = {
-        title: 'Stream Flow for <br>'+ chosenSite,
+        title: 'Stream Elevation for <br>'+ chosenSite,
             yaxis: {
                 title: {
-                    text: 'Stream Flow (cfs)'
+                    text: 'Water Elevation (ft)'
                 }
             }
 
